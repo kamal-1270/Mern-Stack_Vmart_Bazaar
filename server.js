@@ -1,51 +1,48 @@
-import express from "express"
+import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import connectDB from "./config/db.js";
-import authRoutes from './routes/authRoute.js'
-import cors from 'cors'
-import categoryRoutes from './routes/categoryRoutes.js'
-import productRoutes from './routes/productRoutes.js'
-import path from 'path'
+import authRoutes from './routes/authRoute.js';
+import cors from 'cors';
+import categoryRoutes from './routes/categoryRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import path from 'path';
 import { fileURLToPath } from 'url';
-//configure env
+
+// Configure environment variables
 dotenv.config();
 
-//database config
+// Database configuration
 connectDB();
 
-//esmodule fix
+// ES module fix
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-//rest object
-const app=express();
 
-// middleware
-app.use(cors())
+// Initialize express app
+const app = express();
+
+// Middleware
+app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
-app.use(express.static(path.join(__dirname,"./client/build")))
 
-// routes
-app.use("/auth",authRoutes);
-app.use('/category',categoryRoutes)
-app.use('/product',productRoutes)
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, './client/build')));
 
+// API routes
+app.use("/auth", authRoutes);
+app.use('/category', categoryRoutes);
+app.use('/product', productRoutes);
 
-// app.get("/",(req,res)=>{
-//     res.send(
-//         "<h1>Welcome the ecomerce app</h1>"
-//     )
-// })
+// Catch-all handler to return React's index.html for any request that doesn't match an API route
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './client/build', 'index.html'));
+});
 
-//rest api
-app.use('*',function(req,res){
-    res.sendFile(path.join(__dirname,'./client/build/index.html'))
-})
+// Port configuration
+const PORT = process.env.PORT || 8080;
 
-//port
-const PORT=process.env.PORT || 8080;
-
-app.listen(PORT,()=>{
-    console.log(`Server is running on ${process.env.DEV_MODE} mode on port  ${PORT}`);
-}); 
+app.listen(PORT, () => {
+    console.log(`Server is running in ${process.env.DEV_MODE} mode on port ${PORT}`);
+});
